@@ -1,0 +1,131 @@
+Loading PDF files from: ./pdf_files
+###########
+# Chunk 0 #
+###########
+angr
+Then, checkout and install the following packages, in order:
+•archinfo
+•pyvex (clone with --recursive )
+•cle
+•claripy
+•ailment
+•angr (pip install with--no-build-isolation )
+2.1.3 Troubleshooting
+angr has no attribute Project, or similar
+If angr can be imported but the Project class is missing, it is likely one of two problems:
+1. There is a script named angr.py in the working directory. Rename it to something else.
+2. There is a folder called angrin your working directory, possibly the cloned repository. Change the working
+directory to somewhere else.
+AttributeError: ‘module’ object has no attribute ‘KS_ARCH_X86’
+Thekeystone package is installed, which conflicts with the keystone-engine package, an optional dependency of
+angr. Uninstall keystone and install keystone-engine .
+2.2 Reporting Bugs
+If you’ve found something that angr isn’t able to solve and appears to be a bug, please let us know!
+1. Create a fork off of angr/binaries and angr/angr
+2. Give us a pull request with angr/binaries, with the binaries in question
+3. Give us a pull request for angr/angr, with testcases that trigger the binaries in angr/tests/broken_x.py ,
+angr/tests/broken_y.py , etc
+Pleasetrytofollowthetestcaseformatthatwehave(sothecodeisinatest_blahfunction),thatwaywecanveryeasily
+merge that and make the scripts run.
+An example is:
+deftest_some_broken_feature():
+p = angr.Project("some_binary")
+result = p.analyses.SomethingThatDoesNotWork()
+assertresult == "what it should *actually* be if it worked"
+if__name__ == '__main__ ':
+test_some_broken_feature()
+This will greatlyhelp us recreate your bug and fix it faster.
+The ideal situation is that, when the bug is fixed, your testcases passes (i.e., the assert at the end does not raise an
+AssertionError).
+6 Chapter 2. Getting Started
+
+
+--------------------------------------------------------------------------------
+###########
+# Chunk 1 #
+###########
+angr
+9.1.4 Exploring and analysing states
+Choosing a different Exploring strategy
+simgr.use_technique(angr.exploration_techniques.DFS())
+Symbolically execute until we find a state satisfying our find=andavoid=parameters
+avoid_addr = [0x400c06, 0x400bc7]
+find_addr = 0x400c10d
+simgr.explore(find=find_addr, avoid=avoid_addr)
+found = simgr.found[0] # A state that reached the find condition from explore
+found.solver.eval(sym_arg, cast_to=bytes) # Return a concrete string value for the sym ␣
+˓→arg to reach this state
+Symbolically execute until lambda expression is True
+simgr.step(until= lambdasm: sm.active[0].addr >= first_jmp)
+This is especially useful with the ability to access the current STDOUT or STDERR (1 here is the File Descriptor for
+STDOUT)
+simgr.explore(find= lambdas: "correct" ins.posix.dumps(1))
+Memory Managment on big searches (Auto Drop Stashes):
+simgr.explore(find=find_addr, avoid=avoid_addr, step_func= lambdalsm: lsm.drop(stash=
+˓→'avoid '))
+Manually Exploring
+simgr.step(step_func=step_func, until= lambdalsm: len(sm.found) > 0)
+defstep_func(lsm):
+lsm.stash(filter_func= lambdastate: state.addr == 0x400c06, from_stash= 'active ', to_
+˓→stash= 'avoid ')
+lsm.stash(filter_func= lambdastate: state.addr == 0x400bc7, from_stash= 'active ', to_
+˓→stash= 'avoid ')
+lsm.stash(filter_func= lambdastate: state.addr == 0x400c10, from_stash= 'active ', to_
+˓→stash= 'found ')
+returnlsm
+Enable Logging output from Simulation Manager:
+import logging
+logging.getLogger( 'angr.sim_manager ').setLevel(logging.DEBUG)
+126 Chapter 9. Appendix
+
+
+--------------------------------------------------------------------------------
+###########
+# Chunk 2 #
+###########
+angr
+property constraints
+Returns the constraints of the state stored by the solver.
+eval_to_ast (e,n,extra_constraints=() ,exact=None )
+Evaluate an expression, using the solver if necessary. Returns AST objects.
+Parameters
+•e– the expression
+•n– the number of desired solutions
+•extra_constraints – extra constraints to apply to the solver
+•exact– if False, returns approximate solutions
+Returns
+a tuple of the solutions, in the form of claripy AST nodes
+Return type
+tuple
+max(e,extra_constraints=() ,exact=None ,signed=False )
+Return the maximum value of expression e.
+:param e : expression (an AST) to evaluate :type extra_constraints: :param extra_constraints: extra con-
+straints (as ASTs) to add to the solver for this solve :param exact : if False, return approximate solutions.
+:paramsigned: Whethertheexpressionshouldbetreatedasasignedvalue. :return: themaximumpossible
+value of e (backend object)
+min(e,extra_constraints=() ,exact=None ,signed=False )
+Return the minimum value of expression e.
+:param e : expression (an AST) to evaluate :type extra_constraints: :param extra_constraints: extra con-
+straints (as ASTs) to add to the solver for this solve :param exact : if False, return approximate solutions.
+:paramsigned: Whethertheexpressionshouldbetreatedasasignedvalue. :return: theminimumpossible
+value of e (backend object)
+solution (e,v,extra_constraints=() ,exact=None )
+Return True if vis a solution of exprwith the extra constraints, False otherwise.
+Parameters
+•e– An expression (an AST) to evaluate
+•v– The proposed solution (an AST)
+•extra_constraints – Extra constraints (as ASTs) to add to the solver for this solve.
+•exact– If False, return approximate solutions.
+Returns
+True ifvis a solution of expr, False otherwise
+is_true(e,extra_constraints=() ,exact=None )
+If the expression provided is absolutely, definitely a true boolean, return True. Note that returning False
+doesn’t necessarily mean that the expression can be false, just that we couldn’t figure that out easily.
+Parameters
+•e– An expression (an AST) to evaluate
+•extra_constraints – Extra constraints (as ASTs) to add to the solver for this solve.
+•exact– If False, return approximate solutions.
+258 Chapter 10. API Reference
+
+
+--------------------------------------------------------------------------------
